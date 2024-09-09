@@ -261,3 +261,118 @@ By organizing your project like this, you create self-contained, reusable module
 ```json
 [{"name":"HieuTT77","level":"SA"}]
 ```
+
+
+## Mapping DB
+
+In NestJS, you can use **native SQL queries** with MariaDB through the **TypeORM** or **Prisma** libraries. Below, I'll demonstrate how to use TypeORM to execute native SQL queries with MariaDB.
+
+### Steps to Use Native SQL with TypeORM in NestJS
+
+1. **Install TypeORM and MariaDB Driver**
+
+First, install the required packages:
+
+```bash
+npm install @nestjs/typeorm typeorm mysql2
+```
+
+- **`@nestjs/typeorm`**: Integrates TypeORM with NestJS.
+- **`mysql2`**: MariaDB is compatible with the MySQL2 driver.
+
+2. **Configure TypeORM in Your NestJS Application**
+
+In your `app.module.ts` (or a dedicated `database.module.ts`), configure the TypeORM connection to use MariaDB.
+
+```typescript
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+@Module({
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'mysql', // Use 'mysql' since MariaDB is compatible with MySQL
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'your_password',
+      database: 'your_database',
+      entities: [], // Add your entities here if you're using TypeORM entities
+      synchronize: true, // Set to false in production
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+3. **Executing Native SQL Queries in a Service**
+
+To execute raw SQL queries in NestJS with TypeORM, you can use the `query()` method from the `EntityManager` or `DataSource`.
+
+Here’s how to run a native SQL query:
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+  ) {}
+
+  async findUsers() {
+    const sql = `SELECT * FROM users WHERE active = 1`;
+    return await this.dataSource.query(sql);
+  }
+
+  async addUser(name: string, email: string) {
+    const sql = `INSERT INTO users (name, email) VALUES (?, ?)`;
+    return await this.dataSource.query(sql, [name, email]);
+  }
+}
+```
+
+- **`this.dataSource.query(sql)`**: Executes the raw SQL query.
+- **`query(sql, params)`**: The second argument is an array of parameters to prevent SQL injection.
+
+4. **Creating the Controller**
+
+You can now create a controller that calls the `UserService` methods to interact with MariaDB:
+
+```typescript
+import { Controller, Get, Post, Body } from '@nestjs/common';
+import { UserService } from './user.service';
+
+@Controller('users')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Get()
+  async getUsers() {
+    return await this.userService.findUsers();
+  }
+
+  @Post()
+  async addUser(@Body() body: { name: string, email: string }) {
+    return await this.userService.addUser(body.name, body.email);
+  }
+}
+```
+
+### Final Project Structure
+
+```
+src/
+└── app/
+    ├── app.module.ts
+    ├── user/
+    │   ├── user.controller.ts
+    │   ├── user.service.ts
+```
+
+### Summary
+
+- You can execute native SQL queries in NestJS with TypeORM using `query()` from the `DataSource` or `EntityManager`.
+- You can write native SQL directly for complex queries or when you prefer not to use ORM's abstraction.

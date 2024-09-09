@@ -5,8 +5,8 @@ import { UserRepository } from '../repo/user.repository';
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  findAll() {
-    return this.userRepository.findAll();
+  async findAll() {
+    return await this.userRepository.findAll();
   }
 
   create(user: any) {

@@ -1,18 +1,25 @@
 import { Injectable } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UserRepository {
-  private readonly users = [{
+  private readonly user = [{
     name: "HieuTT77",
-    level: "SA"
+    user_id: "1"
   }];
 
-  findAll() {
-    return this.users;
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+  ) { }
+
+  async findAll() {
+    const sql = `SELECT * FROM user;`;
+    return await this.dataSource.query(sql);
   }
 
-  save(user: any) {
-    this.users.push(user);
+  async save(user: any) {
+    this.user.push(user);
     return user;
   }
 }
