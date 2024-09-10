@@ -1,9 +1,11 @@
-import { Column, Model } from 'sequelize-typescript';
-export class UserDetailDto extends Model<UserDetailDto>{
-    @Column
-    shop_name: string;
-    @Column
+export class UserDetailDto {
+    shop: string;
     user_name: string;
-    @Column
-    user_id: number;
+    uid: number;
+
+    constructor(user: any) {
+        this.uid = user.user_id;
+        this.user_name = user.user_name;
+        this.shop = user.shop_name;
+    }
 }

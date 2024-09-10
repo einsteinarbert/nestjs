@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Sequelize, QueryTypes } from 'sequelize';
 import { User } from './user.entity';
 import { stringify } from 'querystring';
+import { UserDetailDto } from './dto/user.details.dto';
 
 @Injectable()
 export class UserService {
@@ -27,15 +28,18 @@ export class UserService {
    * @param id userId
    * @returns list user & shop
    */
-  async findByUserId(id: number) {
+  async findByUserId(id: number): Promise<UserDetailDto[]> {
     console.log("Id: " + JSON.stringify(id));
     const args = { id };
     // Execute native SQL query
-    return this.sequelize.query(this.sql,
+    const results = await this.sequelize.query(this.sql,
       {
         bind: { userId: id["id"] },  // Use bind for named parameters
         type: QueryTypes.SELECT
       });
+
+    // Ánh xạ kết quả SQL sang DTO
+    return results.map(u => new UserDetailDto(u));
   }
 
   readonly sql =
