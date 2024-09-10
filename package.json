@@ -16,7 +16,7 @@
         "@nestjs/platform-express": "^9.0.0",
         "@nestjs/platform-fastify": "^9.0.9",
         "@nestjs/platform-socket.io": "^9.0.8",
-        "@nestjs/typeorm": "^10.0.2",
+        "@nestjs/sequelize": "^10.0.1",
         "@nestjs/websockets": "^9.0.8",
         "cookie-parser": "^1.4.6",
         "express": "^4.18.1",
@@ -24,8 +24,9 @@
         "mysql2": "^3.11.0",
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.0.0",
-        "tslib": "^2.3.0",
-        "typeorm": "^0.3.20"
+        "sequelize": "^6.37.3",
+        "sequelize-typescript": "^2.1.6",
+        "tslib": "^2.3.0"
     },
     "devDependencies": {
         "@nestjs/schematics": "^9.0.0",
@@ -41,6 +42,7 @@
         "@types/cookie-parser": "^1.4.3",
         "@types/jest": "27.4.1",
         "@types/node": "16.11.7",
+        "@types/sequelize": "^4.28.20",
         "@typescript-eslint/eslint-plugin": "^5.29.0",
         "@typescript-eslint/parser": "^5.29.0",
         "eslint": "~8.15.0",

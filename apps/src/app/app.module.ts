@@ -3,24 +3,14 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-import { UserModule } from './config.module/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserModule } from './module/user/user.module';
+import { DatabaseProviders } from './config/database/database.provider';
 
 
 @Module({
-  imports: [UserModule,
-    TypeOrmModule.forRoot({
-      type: 'mysql', // Use 'mysql' since MariaDB is compatible with MySQL
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'canhthong',
-      database: 'longchou',
-      entities: [], // Add your entities here if you're using TypeORM entities
-      synchronize: true, // Set to false in production
-    })
-  ],  // Add UserModule to the imports array
+  imports: [UserModule],  // Add UserModule to the imports array
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ...DatabaseProviders], // Register your database providers here
+  exports: [...DatabaseProviders],   // Export them if other modules need them
 })
 export class AppModule { }

@@ -275,6 +275,8 @@ First, install the required packages:
 
 ```bash
 npm install @nestjs/typeorm typeorm mysql2
+npm install --save sequelize sequelize-typescript
+npm install --save-dev @types/sequelize
 ```
 
 - **`@nestjs/typeorm`**: Integrates TypeORM with NestJS.
@@ -376,3 +378,124 @@ src/
 
 - You can execute native SQL queries in NestJS with TypeORM using `query()` from the `DataSource` or `EntityManager`.
 - You can write native SQL directly for complex queries or when you prefer not to use ORM's abstraction.
+
+## Mapping DTO with native sql
+
+In NestJS (or any Node.js framework), mapping the result of a query to a custom **DTO (Data Transfer Object)** is a common pattern for separating the database layer from the business logic layer. DTOs help structure and validate data before returning it to the client or using it in your services.
+
+Here’s a step-by-step guide to mapping query results to a custom DTO in NestJS:
+
+### 1. **Create a DTO Class**
+
+First, define your DTO. This will represent the structure of the data you expect from the query.
+
+```typescript
+export class UserDto {
+  id: number;
+  name: string;
+  email: string;
+}
+```
+
+In this example, the `UserDto` is a class that defines the fields you expect from the query results (`id`, `name`, and `email`).
+
+### 2. **Execute the Query in the Service Layer**
+
+Now, you can execute a native SQL query (or use the ORM like TypeORM or Prisma) in your service, and then map the result to the DTO.
+
+Here is how to do it with **TypeORM** and a native SQL query:
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { UserDto } from './dto/user.dto';
+
+@Injectable()
+export class UserService {
+  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
+
+  async getUsers(): Promise<UserDto[]> {
+    // Execute native SQL query
+    const rawData = await this.dataSource.query('SELECT id, name, email FROM users');
+    
+    // Map raw query result to UserDto
+    return rawData.map(row => new UserDto(row.id, row.name, row.email));
+  }
+}
+```
+
+In this case:
+- `this.dataSource.query()` executes a raw SQL query.
+- `rawData` is the result of the query, and each `row` represents a user.
+- The result is mapped to the `UserDto` by creating new instances of `UserDto` from each row.
+
+### 3. **Return the DTO from the Controller**
+
+In your controller, return the DTOs to the client:
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+import { UserService } from './user.service';
+import { UserDto } from './dto/user.dto';
+
+@Controller('users')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
+
+  @Get()
+  async getAllUsers(): Promise<UserDto[]> {
+    return await this.userService.getUsers();
+  }
+}
+```
+
+### 4. **Optional: Use `class-transformer` for Automatic Mapping**
+
+You can automate the process of mapping raw data to DTOs using the `class-transformer` library, which can transform plain JavaScript objects into class instances.
+
+First, install `class-transformer`:
+
+```bash
+npm install class-transformer class-validator
+```
+
+Then, update your DTO class to include decorators from `class-transformer`:
+
+```typescript
+import { Expose } from 'class-transformer';
+
+export class UserDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string;
+
+  @Expose()
+  email: string;
+}
+```
+
+In your service, you can now use `plainToInstance()` to automatically map query results to DTOs:
+
+```typescript
+import { plainToInstance } from 'class-transformer';
+import { UserDto } from './dto/user.dto';
+
+async getUsers(): Promise<UserDto[]> {
+  const rawData = await this.dataSource.query('SELECT id, name, email FROM users');
+  
+  // Automatically map raw query result to UserDto
+  return plainToInstance(UserDto, rawData);
+}
+```
+
+### Summary:
+
+1. **Define DTOs**: Create a DTO class that matches the structure of the data you expect.
+2. **Execute Queries**: Use the service layer to run native queries or ORM-based queries.
+3. **Map Results**: Manually map the result to the DTO, or use a library like `class-transformer` to automate the mapping process.
+4. **Return DTO**: Return the DTO from your service or controller for clean separation of concerns.
+
+By following this pattern, you can easily transform raw data into structured DTOs, ensuring your application logic is decoupled from database structures.

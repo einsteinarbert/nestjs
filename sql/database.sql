@@ -9,3 +9,20 @@ create table user
 	name varchar(200) not null
 );
 
+create table shop
+(
+    shop_id bigint auto_increment,
+    shop_name varchar(100) not null,
+    constraint shop_pk
+        primary key (shop_id)
+);
+
+create table user_shop
+(
+    user_shop_id bigint auto_increment,
+    user_id bigint not null,
+    shop_id bigint not null,
+    constraint user_shop_pk
+        primary key (user_shop_id)
+);
+
