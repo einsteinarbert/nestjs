@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Sequelize, QueryTypes } from 'sequelize';
 import { User } from './user.entity';
-import { stringify } from 'querystring';
 import { UserDetailDto } from './dto/user.details.dto';
+import { Transactional } from '../../config/annotation/decorator/transactional.decorator';
 
 @Injectable()
 export class UserService {
@@ -40,6 +40,13 @@ export class UserService {
 
     // Ánh xạ kết quả SQL sang DTO
     return results.map(u => new UserDetailDto(u));
+  }
+
+  @Transactional() // Áp dụng transaction TODO: not work at here
+  async updateUserData(id: number, updateData: any): Promise<void> {
+    await this.userRepository.update(updateData, {
+      where: { user_id: id },
+    });
   }
 
   readonly sql =

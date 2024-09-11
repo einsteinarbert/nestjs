@@ -1,5 +1,8 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
+import { User } from './user.entity';
+import { Transaction } from 'sequelize';
+import { Transactional } from '../../config/annotation/decorator/transactional.decorator';
 
 @Controller('users')
 export class UserController {
@@ -10,10 +13,17 @@ export class UserController {
     return await this.userService.findAll();
   }
 
-  // @Post("/add")
-  // async create(@Body() user: any) {
-  //   return await this.userService.create(user);
-  // }
+  /**
+   * Test transaction annotation
+   * @param id user id
+   * @param user updating data
+   * @returns: TODO
+   */
+  @Transactional()
+  @Post("/update/:id")
+  async create(@Param('id', new ParseIntPipe()) id,  @Body() user: User) {
+    return await this.userService.updateUserData(id, user);
+  }
 
   @Post("/by-id")
   async find(@Body() id: number) {
