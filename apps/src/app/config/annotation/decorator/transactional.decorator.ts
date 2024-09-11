@@ -20,7 +20,7 @@ export function Transactional() {
                 sequelize.transaction().then(async (transaction) => {
                     try {
                         // Call the original method within the transaction context
-                        const result = await originalMethod.apply(this, [...args, { transaction }]);
+                        const result = await originalMethod.apply(this, [...args, transaction]);
 
                         // Commit the transaction if everything goes well
                         console.log('Committing transaction.');

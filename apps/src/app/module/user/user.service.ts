@@ -44,7 +44,7 @@ export class UserService {
     return results.map(u => new UserDetailDto(u));
   }
 
-  async updateUserData(id: number, updateData: any): Promise<void> {
+  async updateUserData1(id: number, updateData: any): Promise<void> {
     console.log("Id json?: " + JSON.stringify(id));
     let trans = await this.sequelize.transaction();
     try {
@@ -65,8 +65,8 @@ export class UserService {
     
   }
 
-  /*@Transactional()
-  async updateUserData1(id: number, updateData: any, trans?: any): Promise<void> {
+  @Transactional()
+  async updateUserData(id: number, updateData: any, trans?: any): Promise<void> {
     console.log("Id json?: " + JSON.stringify(id));
     const _results = await this.sequelize.query(this.sqlUpdate,
       {
@@ -77,8 +77,7 @@ export class UserService {
     if (id == 2) {
       throw Error("Testing rollback when id = 2");
     }
-    
-  }*/
+  }
 
   readonly sqlUpdate = `
     update user set name = $name where user_id = $id
