@@ -2,7 +2,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Sequelize, QueryTypes } from 'sequelize';
 import { User } from './user.entity';
 import { UserDetailDto } from './dto/user.details.dto';
-import { Transactional } from '../../config/annotation/decorator/transactional.decorator';
+import { Log4js } from '../../config/annotation/decorator/log.decorator';
+import { Transactional, getService } from '../../config/annotation/decorator/transactional.decorator';
+import { DependencyService } from '../../config/annotation/dependency.service';
 
 @Injectable()
 export class UserService {
@@ -42,13 +44,23 @@ export class UserService {
     return results.map(u => new UserDetailDto(u));
   }
 
-  @Transactional() // Áp dụng transaction TODO: not work at here
+  @Transactional()
   async updateUserData(id: number, updateData: any): Promise<void> {
-    await this.userRepository.update(updateData, {
-      where: { user_id: id },
-    });
+    console.log("Id json?: " + JSON.stringify(id));
+    console.log("Id: " + id);
+    const _results = await this.sequelize.query(this.sqlUpdate,
+      {
+        bind: { id: id, name: updateData["name"] },  // Use bind for named parameters
+        type: QueryTypes.UPDATE
+      });
+    if (id == 2) {
+      throw Error("Testing rollback when id = 2");
+    }
   }
 
+  readonly sqlUpdate = `
+    update user set name = $name where user_id = $id
+  `;
   readonly sql =
     `select u.name user_name, u.user_id, s.shop_name from user u
       join user_shop us on us.user_id = u.user_id

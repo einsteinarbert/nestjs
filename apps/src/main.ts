@@ -5,8 +5,8 @@ import cookieParser = require('cookie-parser');
 
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
-import { TransactionInterceptor } from './app/config/annotation/interceptor/transaction.interceptor';
-import { Sequelize } from 'sequelize';
+import { DependencyService } from './app/config/annotation/dependency.service';
+import { getService, initializeDependencyService } from './app/config/annotation/decorator/transactional.decorator';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -14,8 +14,12 @@ async function bootstrap() {
   // Use dependency injection to get the required dependencies
   const reflector = app.get(Reflector);    // Get Reflector instance
   const sequelize = app.get("SEQUELIZE");    // Get Sequelize instance
-  app.useGlobalInterceptors(new TransactionInterceptor(reflector, sequelize));
-  
+  if (!getService()) {
+    initializeDependencyService(new DependencyService(reflector, sequelize));
+  }
+
+  // app.useGlobalInterceptors(new TransactionInterceptor(reflector, sequelize));
+
   const port = process.env.PORT || 8080;
   app.enableCors({
     origin: true,
