@@ -44,19 +44,41 @@ export class UserService {
     return results.map(u => new UserDetailDto(u));
   }
 
-  @Transactional()
   async updateUserData(id: number, updateData: any): Promise<void> {
     console.log("Id json?: " + JSON.stringify(id));
-    console.log("Id: " + id);
+    let trans = await this.sequelize.transaction();
+    try {
+      const _results = await this.sequelize.query(this.sqlUpdate,
+        {
+          bind: { id: id, name: updateData["name"] },  // Use bind for named parameters
+          type: QueryTypes.UPDATE,
+          transaction: trans
+        });
+      if (id == 2) {
+        throw Error("Testing rollback when id = 2");
+      }
+      await trans.commit();
+    } catch(ex: any) {
+      await trans.rollback();
+      throw ex;
+    }
+    
+  }
+
+  /*@Transactional()
+  async updateUserData1(id: number, updateData: any, trans?: any): Promise<void> {
+    console.log("Id json?: " + JSON.stringify(id));
     const _results = await this.sequelize.query(this.sqlUpdate,
       {
         bind: { id: id, name: updateData["name"] },  // Use bind for named parameters
-        type: QueryTypes.UPDATE
+        type: QueryTypes.UPDATE,
+        transaction: trans
       });
     if (id == 2) {
       throw Error("Testing rollback when id = 2");
     }
-  }
+    
+  }*/
 
   readonly sqlUpdate = `
     update user set name = $name where user_id = $id

@@ -4,8 +4,8 @@ import { DependencyService } from '../dependency.service';
 let dependencyService: DependencyService;
 export function Transactional() {
     return function (
-        target: any,
-        propertyKey: string,
+        _target: any,
+        _propertyKey: string,
         descriptor: TypedPropertyDescriptor<any>,
     ) {
         const originalMethod = descriptor.value;
@@ -14,7 +14,7 @@ export function Transactional() {
             if (!dependencyService) {
                 throw new Error('DependencyService not available');
             }
-            const _reflector = dependencyService.getReflector();
+            // const _reflector = dependencyService.getReflector();
             const sequelize = dependencyService.getSequelize();
             return new Observable((obs: Observer<any>) => {
                 sequelize.transaction().then(async (transaction) => {
